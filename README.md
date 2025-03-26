@@ -1,12 +1,5 @@
 # Jester 🎭  
-A lightweight, chainable JSON handling library for Go.
-
-## Features  
-✅ Chainable API: `jester.Get("key").Get("subkey").Int()`  
-✅ Handles Nested JSON: Traverse objects and arrays  
-✅ Type-Specific Getters: `.String()`, `.Int()`, `.Bool()`, `.Map()`, `.Array()`  
-✅ Safe Type Conversion: Errors when types don’t match  
-✅ JSON Parsing & Serialization  
+A lightweight JSON handling library in Go. Built from [github.com/bitly/go-simplejson](https://github.com/bitly/go-simplejson).
 
 ## Installation  
 ```sh
