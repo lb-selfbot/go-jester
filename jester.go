@@ -208,6 +208,32 @@ func (d *Data) get(key any) *Data {
 	return New(nil)
 }
 
+// Len returns the length of the underlying data.
+func (d *Data) Len() int {
+	if d.data == nil {
+		return 0
+	}
+
+	switch v := d.data.(type) {
+	case map[string]any:
+		return len(v)
+	case []any:
+		return len(v)
+	case string:
+		return len(v)
+	case []byte:
+		return len(v)
+	}
+
+	rv := reflect.ValueOf(d.data)
+	switch rv.Kind() {
+	case reflect.Map, reflect.Slice, reflect.Array, reflect.String, reflect.Chan:
+		return rv.Len()
+	}
+
+	return 0
+}
+
 // Map returns the underlying data as a map[string]any.
 func (d *Data) Map() (map[string]any, error) {
 	if m, ok := d.data.(map[string]any); ok {

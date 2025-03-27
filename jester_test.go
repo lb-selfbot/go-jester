@@ -312,3 +312,62 @@ func TestPathWillOverwriteExisting(t *testing.T) {
 		t.Errorf("got %#v", s)
 	}
 }
+
+func TestLen(t *testing.T) {
+	// Test Len with map
+	js, err := jester.NewJson([]byte(`{"a":1,"b":2,"c":3}`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+	if l := js.Len(); l != 3 {
+		t.Errorf("map length: got %d, expected 3", l)
+	}
+
+	// Test Len with array/slice
+	js, err = jester.NewJson([]byte(`[1,2,3,4,5]`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+	if l := js.Len(); l != 5 {
+		t.Errorf("slice length: got %d, expected 5", l)
+	}
+
+	// Test Len with string
+	js = jester.New("test string")
+	if l := js.Len(); l != 11 {
+		t.Errorf("string length: got %d, expected 11", l)
+	}
+
+	// Test Len with byte slice
+	js = jester.New([]byte("test bytes"))
+	if l := js.Len(); l != 10 {
+		t.Errorf("bytes length: got %d, expected 10", l)
+	}
+
+	// Test Len with empty map
+	js = jester.NewEmpty()
+	if l := js.Len(); l != 0 {
+		t.Errorf("empty map length: got %d, expected 0", l)
+	}
+
+	// Test Len with nil
+	js = jester.New(nil)
+	if l := js.Len(); l != 0 {
+		t.Errorf("nil length: got %d, expected 0", l)
+	}
+
+	// Test Len with nested structure
+	js, err = jester.NewJson([]byte(`{"nested":{"a":1,"b":2},"array":[1,2,3]}`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+	if l := js.Len(); l != 2 {
+		t.Errorf("nested structure length: got %d, expected 2", l)
+	}
+	if l := js.Get("nested").Len(); l != 2 {
+		t.Errorf("nested map length: got %d, expected 2", l)
+	}
+	if l := js.Get("array").Len(); l != 3 {
+		t.Errorf("nested array length: got %d, expected 3", l)
+	}
+}
