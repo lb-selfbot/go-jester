@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"iter"
 	"reflect"
 	"strconv"
 
@@ -274,6 +275,17 @@ func (d *Data) MustSlice(args ...[]any) []any {
 	}
 
 	return value
+}
+
+// Iterator returns an iterator for the underlying data.
+func (d *Data) Iterator() iter.Seq[*Data] {
+	return func(yield func(*Data) bool) {
+		for i := range d.Len() {
+			if !yield(d.Get(i)) {
+				return
+			}
+		}
+	}
 }
 
 // Bool returns the underlying data as a bool.

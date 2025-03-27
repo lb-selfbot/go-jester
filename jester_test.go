@@ -371,3 +371,104 @@ func TestLen(t *testing.T) {
 		t.Errorf("nested array length: got %d, expected 3", l)
 	}
 }
+
+func TestIterator(t *testing.T) {
+	// Test slice iteration
+	js, err := jester.NewJson([]byte(`[1, 2, 3, 4, 5]`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+
+	// Collect all elements using iterator
+	var collected []int
+	for v := range js.Iterator() {
+		val, err := v.Int()
+		if err != nil {
+			t.Fatalf("err %#v", err)
+		}
+		collected = append(collected, val)
+	}
+
+	// Verify collected values
+	expected := []int{1, 2, 3, 4, 5}
+	if !reflect.DeepEqual(collected, expected) {
+		t.Errorf("slice iteration: got %#v, expected %#v", collected, expected)
+	}
+
+	// Test mixed type slice
+	js, err = jester.NewJson([]byte(`[1, "test", true, 4.5]`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+
+	var types []string
+	for v := range js.Iterator() {
+		switch {
+		case v.MustInt(0) != 0:
+			types = append(types, "int")
+		case v.MustString("") != "":
+			types = append(types, "string")
+		case v.MustBool(false):
+			types = append(types, "bool")
+		case v.MustFloat64(0) != 0:
+			types = append(types, "float")
+		default:
+			types = append(types, "unknown")
+		}
+	}
+
+	expectedTypes := []string{"int", "string", "bool", "float"}
+	if !reflect.DeepEqual(types, expectedTypes) {
+		t.Errorf("mixed type iteration: got %#v, expected %#v", types, expectedTypes)
+	}
+
+	// Test empty data
+	js = jester.New(nil)
+	count := 0
+	for range js.Iterator() {
+		count++
+	}
+	if count != 0 {
+		t.Errorf("nil data iteration should yield 0 values, got %d", count)
+	}
+
+	// Test nested structure access via iteration
+	js, err = jester.NewJson([]byte(`[{"name": "item1", "value": 10}, {"name": "item2", "value": 20}]`))
+	if err != nil {
+		t.Fatalf("err %#v", err)
+	}
+
+	var items []struct {
+		Name  string
+		Value int
+	}
+
+	for item := range js.Iterator() {
+		name, err := item.Get("name").String()
+		if err != nil {
+			t.Fatalf("err %#v", err)
+		}
+
+		value, err := item.Get("value").Int()
+		if err != nil {
+			t.Fatalf("err %#v", err)
+		}
+
+		items = append(items, struct {
+			Name  string
+			Value int
+		}{Name: name, Value: value})
+	}
+
+	expectedItems := []struct {
+		Name  string
+		Value int
+	}{
+		{Name: "item1", Value: 10},
+		{Name: "item2", Value: 20},
+	}
+
+	if !reflect.DeepEqual(items, expectedItems) {
+		t.Errorf("nested object iteration: got %#v, expected %#v", items, expectedItems)
+	}
+}
